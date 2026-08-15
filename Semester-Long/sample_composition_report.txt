@@ -1,0 +1,149 @@
+  LNP COMPOSITION & MASS REPORT
+  Run ID : 050    |    Timestamp : 2026-04-06  09:04:29
+  Calculation mode : FORWARD (feed streams → derived streams)
+
+  mass_flow (mg/min) = concentration (mg/mL) x flow_rate (mL/min)
+  TFF separation uses realistic efficiency fractions (see table below).
+
+  TFF SEPARATION EFFICIENCIES
+  Component                             Retained (retentate)   Removed (permeate)
+  Cholesterol                                            98%                   2%
+  Citric Acid                                             2%                  98%
+  DSPC (Phospholipid)                                    98%                   2%
+  EDTA                                                    2%                  98%
+  Ethanol                                                 5%                  95%
+  Ionisable Lipid (SM-102/MC3)                           98%                   2%
+  Dibasic Sodium Phosphate                                2%                  98%
+  Sodium Chloride (NaCl)                                  2%                  98%
+  Monobasic Sodium Phosphate                              2%                  98%
+  PEG-DMG / PEG-Lipid                                    98%                   2%
+  Sodium Citrate                                          2%                  98%
+  Water                                                  10%                  90%
+  mRNA                                                   95%                   5%
+
+  AQUEOUS PHASE  (mRNA + Buffer, Pump P-101)
+  Flow rate : 9.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  mRNA                                        0.1000               0.9000  (user input)
+  Citric Acid                                 8.4000              75.6000  (user input)
+  Sodium Citrate                              5.9000              53.1000  (user input)
+  EDTA                                        0.1900               1.7100  (user input)
+  Water                                     985.0000            8865.0000  (user input)
+
+  ORGANIC PHASE  (Lipids in Ethanol, Pump P-102)
+  Flow rate : 3.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Ionisable Lipid (SM-102/MC3)               10.0000              30.0000  (user input)
+  DSPC (Phospholipid)                         2.5900               7.7700  (user input)
+  Cholesterol                                 1.4800               4.4400  (user input)
+  PEG-DMG / PEG-Lipid                         0.4500               1.3500  (user input)
+  Ethanol                                   789.0000            2367.0000  (user input)
+
+  DILUTION BUFFER  (PBS / Buffer, T-105)
+  Flow rate : 36.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Sodium Chloride (NaCl)                      8.0000             288.0000  (user input)
+  Dibasic Sodium Phosphate                    1.4400              51.8400  (user input)
+  Monobasic Sodium Phosphate                  0.2400               8.6400  (user input)
+  Water                                     990.0000           35640.0000  (user input)
+
+  CRYOPROTECTANT FEED  (Trehalose/Sucrose, T-100)
+  Flow rate : 0.5000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Trehalose / Sucrose (Cryoprotectant)       200.0000             100.0000  (user input)
+  Water                                     800.0000             400.0000  (user input)
+
+  MIXER OUTPUT  (Crude LNP Dispersion, M-101)
+  Flow rate : 12.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Cholesterol                                 0.3700               4.4400  (calculated)
+  Citric Acid                                 6.3000              75.6000  (calculated)
+  DSPC (Phospholipid)                         0.6475               7.7700  (calculated)
+  EDTA                                        0.1425               1.7100  (calculated)
+  Ethanol                                   197.2500            2367.0000  (calculated)
+  Ionisable Lipid (SM-102/MC3)                2.5000              30.0000  (calculated)
+  PEG-DMG / PEG-Lipid                         0.1125               1.3500  (calculated)
+  Sodium Citrate                              4.4250              53.1000  (calculated)
+  Water                                     738.7500            8865.0000  (calculated)
+  mRNA                                        0.0750               0.9000  (calculated)
+
+  TFF RETENTATE  (Purified Concentrated LNP, UF-101)
+  Flow rate : 8.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Cholesterol                                 0.5439               4.3512  (calculated)
+  Citric Acid                                 0.1890               1.5120  (calculated)
+  DSPC (Phospholipid)                         0.9518               7.6146  (calculated)
+  EDTA                                        0.0043               0.0342  (calculated)
+  Ethanol                                    14.7937             118.3500  (calculated)
+  Ionisable Lipid (SM-102/MC3)                3.6750              29.4000  (calculated)
+  Dibasic Sodium Phosphate                    0.1296               1.0368  (calculated)
+  Sodium Chloride (NaCl)                      0.7200               5.7600  (calculated)
+  Monobasic Sodium Phosphate                  0.0216               0.1728  (calculated)
+  PEG-DMG / PEG-Lipid                         0.1654               1.3230  (calculated)
+  Sodium Citrate                              0.1327               1.0620  (calculated)
+  Water                                     556.3125            4450.5000  (calculated)
+  mRNA                                        0.1069               0.8550  (calculated)
+
+  TFF PERMEATE  (Waste Stream, UF-101)
+  Flow rate : 40.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Cholesterol                                 0.0022               0.0888  (calculated)
+  Citric Acid                                 1.8522              74.0880  (calculated)
+  DSPC (Phospholipid)                         0.0039               0.1554  (calculated)
+  EDTA                                        0.0419               1.6758  (calculated)
+  Ethanol                                    56.2162            2248.6500  (calculated)
+  Ionisable Lipid (SM-102/MC3)                0.0150               0.6000  (calculated)
+  Dibasic Sodium Phosphate                    1.2701              50.8032  (calculated)
+  Sodium Chloride (NaCl)                      7.0560             282.2400  (calculated)
+  Monobasic Sodium Phosphate                  0.2117               8.4672  (calculated)
+  PEG-DMG / PEG-Lipid                         0.0007               0.0270  (calculated)
+  Sodium Citrate                              1.3009              52.0380  (calculated)
+  Water                                    1001.3625           40054.5000  (calculated)
+  mRNA                                        0.0011               0.0450  (calculated)
+
+  FINAL PRODUCT  (Sterile LNP Formulation, ST-101)
+  Flow rate : 8.0000 mL/min
+
+  Component                             Conc (mg/mL)   Mass Flow (mg/min)  Source
+  Cholesterol                                 0.5439               4.3512  (calculated)
+  Citric Acid                                 0.1890               1.5120  (calculated)
+  DSPC (Phospholipid)                         0.9518               7.6146  (calculated)
+  EDTA                                        0.0043               0.0342  (calculated)
+  Ethanol                                    14.7937             118.3500  (calculated)
+  Ionisable Lipid (SM-102/MC3)                3.6750              29.4000  (calculated)
+  Dibasic Sodium Phosphate                    0.1296               1.0368  (calculated)
+  Sodium Chloride (NaCl)                      0.7200               5.7600  (calculated)
+  Monobasic Sodium Phosphate                  0.0216               0.1728  (calculated)
+  PEG-DMG / PEG-Lipid                         0.1654               1.3230  (calculated)
+  Sodium Citrate                              0.1327               1.0620  (calculated)
+  Trehalose / Sucrose (Cryoprotectant)        12.5000             100.0000  (calculated)
+  Water                                     606.3125            4850.5000  (calculated)
+  mRNA                                        0.1069               0.8550  (calculated)
+
+  COMPONENT-WISE MASS BALANCE  (TFF level: inputs = retentate + permeate)
+
+  Component                                Mass In     Mass Out      Error  Status
+  Cholesterol                               4.4400       4.4400     0.0000  PASS
+  Citric Acid                              75.6000      75.6000     0.0000  PASS
+  DSPC (Phospholipid)                       7.7700       7.7700     0.0000  PASS
+  EDTA                                      1.7100       1.7100     0.0000  PASS
+  Ethanol                                2367.0000    2367.0000     0.0000  PASS
+  Ionisable Lipid (SM-102/MC3)             30.0000      30.0000     0.0000  PASS
+  Dibasic Sodium Phosphate                 51.8400      51.8400     0.0000  PASS
+  Sodium Chloride (NaCl)                  288.0000     288.0000     0.0000  PASS
+  Monobasic Sodium Phosphate                8.6400       8.6400     0.0000  PASS
+  PEG-DMG / PEG-Lipid                       1.3500       1.3500     0.0000  PASS
+  Sodium Citrate                           53.1000      53.1000     0.0000  PASS
+  Water                                 44505.0000   44505.0000     0.0000  PASS
+  mRNA                                      0.9000       0.9000     0.0000  PASS
+
+  Mass balance: ALL COMPONENTS BALANCED
+
+  END OF COMPOSITION REPORT

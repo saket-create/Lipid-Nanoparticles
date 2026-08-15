@@ -1,0 +1,394 @@
+  LNP MANUFACTURING PROCESS SIMULATION
+  USER MANUAL
+
+
+  WHAT THIS SIMULATION DOES
+
+  This simulation models a continuous lab-scale LNP (Lipid Nanoparticle)
+  manufacturing process. It calculates:
+    - Flow rates of every stream in the process (Section A)
+    - Concentration (mg/mL) and mass flow rate (mg/min) of every component
+      in every stream (Sections B and C)
+
+  The five process steps covered:
+    Step 1   Microfluidic Mixing               M-101 T-Mixer
+    Step 2   Buffer Dilution                   T-103 Post-Mix Dilution Vessel
+    Step 3   Tangential Flow Filtration        UF-101, 100 kDa MWCO
+    Step 4   Cryoprotectant Addition           T-100 Stabilizer Vessel
+    Step 5   Sterile Filtration                F-101, 0.22 um Filter
+
+  You fill in ONE file (lnp_input.txt), run ONE command, and all results
+  are saved automatically.
+
+
+  YOUR FILES  (keep all four in the same folder)
+
+    lnp_simulation.py          Main script. Runs the flow rate calculation.
+    lnp_composition.py         Composition script. Runs automatically after the main script.
+    lnp_input.txt              The only file you fill in.
+    lnp_user_manual.txt        This manual.
+
+  Do not rename any of these files.
+
+
+  STEP 1   INSTALL PYTHON AND NUMPY  (one-time setup)
+
+  Check if Python is installed. Open a terminal:
+    Windows: press Windows key, type cmd, press Enter
+    Mac: open Terminal from Applications > Utilities
+  Type:
+    python --version
+  If you see Python 3.x.x, Python is installed. If not, download it from python.org.
+
+  Install numpy (required for the matrix solver):
+    pip install numpy
+  You only need to do this once.
+
+
+  STEP 2   OPEN THE INPUT FILE
+
+  Open lnp_input.txt in any plain text editor.
+    Windows: right-click the file, Open with, Notepad
+    Mac: right-click, Open with, TextEdit (then Format > Make Plain Text)
+
+  The file has three sections:
+    SECTION A   Flow rates — required to run the simulation
+    SECTION B   Feed stream compositions — optional, for concentration calculations
+    SECTION C   Final product composition — optional, for back-calculation or verification
+
+
+  STEP 3   FILL IN THE INPUT FILE
+
+  For every parameter you know, type the number after the equals sign:
+    flow_aqueous_mL_min = 9
+
+  For every parameter you do not know (you want it calculated), leave it blank:
+    flow_aqueous_mL_min =
+
+  Four parameters are REQUIRED and must always have a value:
+    dilution_ratio                    (how much buffer is added per unit mixer output)
+    tff_vrr                           (TFF Volume Reduction Ratio)
+    cryo_flow_mL_min                  (cryoprotectant addition flow rate)
+    sterile_filter_dead_vol_mL_min    (sterile filter dead volume)
+
+  Rules:
+    Numbers only in the value field. No units, no text.
+    Blank means unknown. Zero (0) means the value is zero. They are different.
+    Do not change the parameter names on the left side of =
+    Text after the | symbol is for reference only. The code ignores it.
+
+
+  STEP 4   HOW MANY VALUES DO YOU NEED IN SECTION A
+
+  The flow system has 9 flow variables and 7 equations.
+  You must provide at least 2 known flow values for a unique solution (DOF = 0).
+  The 4 REQUIRED parameters do not count toward this minimum.
+
+  DOF = 0    Exactly determined. Unique solution. This is what you want.
+  DOF > 0    Not enough values. The code tells you what is missing.
+  DOF < 0    More values than needed. The extra values are used to cross-check
+             your inputs. The code tells you if they are consistent.
+
+
+  STEP 5   RUN THE SIMULATION
+
+  Open your terminal and navigate to the folder containing your files:
+    Windows:    cd C:\Users\YourName\YourFolder
+    Mac/Linux:  cd /Users/YourName/YourFolder
+
+  Run:
+    python lnp_simulation.py
+  or if that gives an error:
+    python3 lnp_simulation.py
+
+  That is all. Both the flow calculation and the composition calculation run
+  automatically from a single command.
+
+
+  STEP 6   FIND YOUR RESULTS
+
+  A new numbered folder is created every time you run:
+    simulation_runs/run_001/
+    simulation_runs/run_002/
+    (each run gets its own folder — nothing is overwritten)
+
+  Files inside each run folder:
+
+    input_used.txt          Copy of the input file used for that run
+    output_report.txt       Flow rate results, DOF analysis, material balance
+    diagnostics.txt         Solver details, equation reference, step-by-step log
+    composition_report.txt  Concentration and mass flow for all streams
+                            (only created if Section B or C was filled in)
+
+
+  SECTION B AND C: COMPOSITION CALCULATIONS
+
+  For each component in each stream, the fundamental equation is:
+    mass_flow (mg/min) = concentration (mg/mL) x flow_rate (mL/min)
+
+  You provide concentration OR mass flow for each component.
+  The other is calculated automatically.
+
+  If you provide both concentration and mass flow:
+    The code checks if  mass = concentration x flow rate  is satisfied.
+    If it is not, a WARNING is shown. The flow rate model (Section A)
+    is always the authority. Your mass flow value will NOT change the flow rates.
+
+  KEY FORMAT:
+    stream.component.field = value
+
+  stream is one of:
+    aqueous           organic           dilution_buffer           cryo_feed
+  For Section C:
+    final_product
+
+  field is one of:
+    conc_mg_mL        (concentration in mg per mL)
+    mass_mg_min       (mass flow rate in mg per minute)
+
+  Example:
+    aqueous.mRNA.conc_mg_mL = 0.1
+    organic.Ionisable_Lipid.conc_mg_mL = 10.0
+    final_product.mRNA.conc_mg_mL = 0.1069
+
+  You do NOT fill in anything for mixer output, TFF retentate, TFF permeate,
+  or the final product in Section B. These are calculated automatically.
+
+
+  WHAT THE COMPOSITION MODULE CALCULATES
+
+  TFF separation uses realistic efficiency fractions, not ideal 100% cuts:
+    mRNA                   95% retained in retentate,  5% lost to permeate
+    Lipids (IL, DSPC, Chol, PEG)   98% retained,  2% to permeate
+    Ethanol                 5% retained, 95% removed to permeate
+    Buffer salts            2% retained, 98% removed to permeate
+    Water                  10% retained, 90% removed to permeate
+
+  Adjust these in the TFF_RETENTION_FRACTION table at the top of lnp_composition.py
+  if you have experimental data for your specific process.
+
+  Section B only (feed data given):
+    Calculates mixer output, TFF retentate, TFF permeate, and final product
+    concentrations and mass flows by forward propagation.
+
+  Section C only (final product data given):
+    Back-calculates the required feed stream concentrations using the TFF
+    retention fractions in reverse. Useful when you know your target
+    product specification and want to know what feed concentrations you need.
+    Note: Water, buffer salts, and dilution buffer components cannot be
+    back-calculated from final product alone (they come from multiple streams).
+
+  Both B and C given:
+    Calculates forward from Section B, then compares the result to Section C.
+    Any discrepancy greater than 5% triggers a WARNING per component.
+    Useful to verify that your feed and product data are physically consistent.
+
+
+  ALL TYPES OF CALCULATIONS SUPPORTED
+
+  The simulation supports seven different calculation scenarios:
+
+  Type 1   FORWARD (flow rates only)
+           Provide aqueous and organic pump settings. Get all downstream flows.
+           Minimum input: flow_aqueous_mL_min and flow_organic_mL_min (plus REQUIRED)
+
+  Type 2   BACKWARD (flow rates only)
+           Provide target final product flow plus one upstream value.
+           The code calculates what pump settings are needed.
+           Minimum input: final_product_mL_min and one of (flow_organic, flow_aqueous, or FRR)
+
+  Type 3   GENERAL mid-process (flow rates only)
+           Provide any combination of known flow values from anywhere in the process.
+           The code solves all unknowns simultaneously.
+           Example: know FRR and organic flow, want everything else.
+
+  Type 4   FORWARD with composition
+           Sections A + B filled. Flow rates + feed concentrations given.
+           All stream compositions calculated forward.
+
+  Type 5   BACKWARD composition
+           Section A filled, Section C filled, Section B blank.
+           Back-calculates required feed concentrations from final product target.
+
+  Type 6   BOTH (composition verification)
+           Sections A, B, and C all filled.
+           Forward-calculates from feed (B) and checks if result matches product (C).
+
+  Type 7   Composition drives flow rate (reverse path)
+           Section A has some blank flow values. Section B has both conc AND mass
+           for those streams. The code derives the flow rate as mass / concentration,
+           then uses it in the flow solver. This replaces providing the flow in Section A.
+           Example: you know mRNA conc = 0.1 mg/mL and mRNA mass flow = 0.9 mg/min
+           in the aqueous stream. The code derives aqueous flow = 0.9 / 0.1 = 9 mL/min.
+
+
+  WARNINGS AND ERRORS
+
+  [!! ERROR !!]
+    A physically impossible value was found (negative flow, concentration, or mass flow).
+    The simulation stops. Fix the value and re-run.
+
+  [** WARNING **]
+    A value is outside the realistic operating range for that variable.
+    The simulation continues. Review the flagged value.
+
+  [-- ADVISORY --]
+    A value is outside the typical range but within realistic limits.
+    May be intentional. Review if unexpected.
+
+  [WARNING] Inconsistency detected
+    You gave both concentration and mass flow for a component, and they
+    do not agree with the flow rate from Section A.
+    The flow rate model is the authority. The mass flow value in Section B
+    is overridden by conc x flow rate. Your flow rates are NOT changed.
+
+  [WARNING] Total concentration exceeds 1100 mg/mL
+    The sum of all component concentrations in a stream is physically
+    unrealistic (water alone is ~1000 mg/mL). Check your concentration inputs.
+
+  [WARNING] Final product mismatch
+    Section B and Section C data produce inconsistent final product values.
+    Check your feed concentrations or your final product specification.
+
+  [SOLVER ERROR] UNDER-DETERMINED SYSTEM
+    You did not provide enough known flow values. The error message tells you
+    exactly how many more values you need to provide in Section A.
+
+  [INFO] Flow rate derived from composition
+    The code successfully derived a stream flow rate from your Section B
+    mass flow and concentration data. This is informational, not an error.
+
+
+  WORKED EXAMPLES
+
+  The following examples show exactly what to fill in for each of the
+  seven calculation types.
+
+  Example 1: FORWARD (Type 1) — know pump settings, want all downstream flows
+  Set in Section A:
+    flow_aqueous_mL_min = 9
+    flow_organic_mL_min = 3
+    dilution_ratio = 3
+    tff_vrr = 6
+    cryo_flow_mL_min = 0.5
+    sterile_filter_dead_vol_mL_min = 0.5
+    (everything else blank)
+  Expected results:
+    FRR = 3.0, Mixer = 12.0 mL/min, Dilution = 36.0 mL/min
+    TFF Feed = 48.0 mL/min, Retentate = 8.0 mL/min, Permeate = 40.0 mL/min
+    After cryo = 8.5 mL/min, Final product = 8.0 mL/min
+
+  Example 2: BACKWARD (Type 2) — know target product, find required pump settings
+  Set in Section A:
+    flow_organic_mL_min = 3
+    final_product_mL_min = 8
+    dilution_ratio = 3
+    tff_vrr = 6
+    cryo_flow_mL_min = 0.5
+    sterile_filter_dead_vol_mL_min = 0.5
+    (everything else blank)
+  Expected results:
+    flow_aqueous_mL_min = 9.0 mL/min (the required pump setting)
+    All other flows same as Example 1.
+
+  Example 3: GENERAL (Type 3) — mid-process values known
+  Set in Section A:
+    FRR = 3
+    flow_organic_mL_min = 3
+    dilution_ratio = 3
+    tff_vrr = 6
+    cryo_flow_mL_min = 0.5
+    sterile_filter_dead_vol_mL_min = 0.5
+    (everything else blank)
+  FRR + Organic flow -> Aqueous = 9 mL/min derived.
+  All flows calculated same as Example 1.
+
+  Example 4: FORWARD with composition (Type 4) — feed concentrations given
+  Section A: same as Example 1.
+  Section B additions:
+    aqueous.mRNA.conc_mg_mL = 0.1
+    aqueous.Citric_Acid.conc_mg_mL = 8.4
+    aqueous.Water.conc_mg_mL = 985.0
+    organic.Ionisable_Lipid.conc_mg_mL = 10.0
+    organic.Ethanol.conc_mg_mL = 789.0
+    cryo_feed.Trehalose.conc_mg_mL = 200.0
+    cryo_feed.Water.conc_mg_mL = 800.0
+  Calculated results in composition report:
+    mRNA in aqueous:        0.1000 mg/mL,  0.9000 mg/min
+    mRNA in final product:  0.1069 mg/mL,  0.8550 mg/min  (95% of 0.9 retained)
+    Ionisable lipid FP:     3.7500 mg/mL, 30.0000 mg/min  (98% of 30 retained)
+
+  Example 5: BACKWARD composition (Type 5) — back-calculate from product target
+  Section A: same as Example 1.
+  Section C:
+    final_product.mRNA.conc_mg_mL = 0.1069
+    final_product.Ionisable_Lipid.conc_mg_mL = 3.75
+    final_product.Trehalose.conc_mg_mL = 12.5
+  Expected back-calculated results:
+    aqueous.mRNA.conc back-calculated:        ~0.1000 mg/mL
+    organic.Ionisable_Lipid.conc back-calc:   ~10.20 mg/mL
+    cryo_feed.Trehalose.conc back-calc:       200.0 mg/mL
+
+  Example 6: BOTH (Type 6) — verify feed produces expected product
+  Section A: same as Example 1.
+  Section B: same as Example 4.
+  Section C: same as Example 5.
+  Expected: Final product values are CONSISTENT (within 5%).
+  If you change Section C to mRNA = 5.0 mg/mL (wrong), you will see:
+    WARNING: Final product mismatch for mRNA (conc):
+    calculated = 0.1069 mg/mL, user given = 5.0000 mg/mL,
+    relative difference = 97.9%
+
+  Example 7: Composition drives flow rate (Type 7)
+  Leave flow_aqueous_mL_min blank in Section A (give flow_organic = 3).
+  Section B:
+    aqueous.mRNA.conc_mg_mL = 0.1
+    aqueous.mRNA.mass_mg_min = 0.9
+    aqueous.Water.conc_mg_mL = 985.0
+    aqueous.Water.mass_mg_min = 8865.0
+  The code derives: aqueous flow = 0.9 / 0.1 = 9.0 mL/min
+  and uses this automatically in the flow solver.
+  You will see: [INFO] Flow rate derived from composition: Aqueous = 9.0000 mL/min
+
+
+  MATERIAL BALANCE EQUATIONS (for reference)
+
+  All flow calculations are based on these 7 linear equations:
+    EQ1   Aq + Org = Mixer Output
+    EQ2   Dilution Flow = dilution_ratio x Mixer Output
+    EQ3   Mixer Output + Dilution Flow = TFF Feed
+    EQ4   TFF Feed = tff_vrr x Retentate
+    EQ5   TFF Feed = Retentate + Permeate
+    EQ6   Retentate + cryo_flow = After Cryo Flow
+    EQ7   After Cryo Flow - dead_vol = Final Product
+    FRR   FRR = Aqueous / Organic  (resolved analytically before matrix solve)
+    Overall:  Aq + Org + Dilution + Cryo = Final Product + Permeate + Dead Volume
+
+  All equations are linear. The solver uses numpy.linalg.lstsq for direct solution.
+  No iterative method is needed.
+
+  For composition:
+    mass_flow (mg/min) = concentration (mg/mL) x flow_rate (mL/min)
+  This is verified for every component where all three values are known.
+
+
+  FILE AND FOLDER STRUCTURE AFTER RUNNING
+
+  Before running:
+    lnp_simulation.py
+    lnp_composition.py
+    lnp_input.txt
+    lnp_user_manual.txt
+
+  After running:
+    simulation_runs/
+      run_001/
+        input_used.txt             Your input file (copy kept for records)
+        output_report.txt          Flow rate results
+        diagnostics.txt            Solver technical details
+        composition_report.txt     Composition and mass results (if B or C filled)
+      run_002/
+        ...
+
+
+  END OF USER MANUAL

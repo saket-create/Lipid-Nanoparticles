@@ -1,0 +1,182 @@
+  LNP MANUFACTURING PROCESS SIMULATION
+  UNIFIED INPUT FILE  (lnp_input.txt)
+
+  This is the ONLY file you need to fill in. Save it, then run:
+      python lnp_simulation.py
+
+  HOW TO FILL IN THIS FILE:
+    Known value  ->  write the number after =       Example: flow_aqueous_mL_min = 9
+    Unknown      ->  leave blank after =             Example: flow_aqueous_mL_min =
+    REQUIRED     ->  must always have a value (fixed operating conditions)
+    Blank and zero are different. Blank = unknown. Zero = the value is zero.
+    Do NOT change parameter names on the left side of =
+    Numbers only in the value field. No units, no text.
+    Text after | on each line is for your reference only. The code ignores it.
+
+  THE FILE HAS THREE SECTIONS:
+    SECTION A  ->  Flow rates (the main simulation). You need at least 2 known flow values.
+    SECTION B  ->  Concentrations / mass flows for the FEED streams (aqueous, organic, etc.)
+                   Optional. If filled, composition of all streams is calculated.
+    SECTION C  ->  Concentrations / mass flows for the FINAL PRODUCT stream.
+                   Optional. Fill to back-calculate feed compositions, or to verify
+                   that your feed data produces the expected final product.
+
+  SECTION B AND C RULES:
+    For each component, provide concentration (mg/mL) OR mass flow (mg/min) OR both.
+      conc only   ->  mass flow = concentration x flow rate   (calculated)
+      mass only   ->  concentration = mass flow / flow rate   (calculated)
+      both given  ->  code checks: mass should equal conc x flow rate.
+                      If they disagree, a WARNING is shown. The flow rate model
+                      (Section A) is the authority and will NOT be changed.
+    Key format for Sections B and C:   stream.component.field = value
+    Field is either  conc_mg_mL  (concentration)  or  mass_mg_min  (mass flow rate)
+
+  WHAT GETS CALCULATED AUTOMATICALLY IN SECTION B AND C:
+    If Section B only  ->  FORWARD: all derived streams calculated from feed data
+    If Section C only  ->  BACKWARD: feed concentrations back-calculated from final product
+    If both B and C    ->  BOTH: forward from feed, then checks if result matches Section C
+
+
+  SECTION A  —  FLOW RATES
+  The flow solver calculates all unknowns using 7 material balance equations.
+  You need at least 2 known flow values (the 4 REQUIRED parameters do not count).
+  DOF = 0 is the target (exactly determined system, unique solution).
+
+  Microfluidic Mixing  (M-101 T-Mixer)
+  Aqueous phase: mRNA dissolved in citrate buffer, pumped by P-101
+  Organic phase: lipids dissolved in ethanol, pumped by P-102
+  FRR = Aqueous Flow / Organic Flow  (controls particle size and encapsulation efficiency)
+
+flow_aqueous_mL_min =        | Unit: mL/min  | Typical: 3-15    | Aqueous phase flow (Pump P-101)
+flow_organic_mL_min =        | Unit: mL/min  | Typical: 1-5     | Organic phase flow (Pump P-102)
+FRR =                        | Unit: none    | Typical: 1-5     | Flow Rate Ratio = Aqueous / Organic
+mixer_flow_mL_min =          | Unit: mL/min  | Typical: 4-20    | Mixer output = Aqueous + Organic
+
+  Buffer Dilution  (T-103 Post-Mix Dilution Vessel)
+  Dilution buffer (PBS pH 7.4) is added after the mixer to reduce ethanol
+  and quench LNP self-assembly. dilution_ratio = buffer flow / mixer output flow.
+
+dilution_ratio = 3           | Unit: none    | Typical: 1-5     | REQUIRED. Buffer added per unit mixer output
+dilution_flow_mL_min =       | Unit: mL/min  | Typical: 4-75    | Dilution buffer flow rate
+tff_feed_mL_min =            | Unit: mL/min  | Typical: 8-100   | Total flow into TFF = mixer + dilution
+
+  Tangential Flow Filtration  (UF-101, 100 kDa MWCO)
+  LNPs are concentrated. Ethanol and buffer salts are removed through the membrane.
+  VRR = TFF feed flow / retentate flow. Higher VRR = more concentrated product.
+
+tff_vrr = 6                  | Unit: none    | Typical: 4-10    | REQUIRED. TFF Volume Reduction Ratio
+retentate_mL_min =           | Unit: mL/min  | Typical: 1-15    | Purified LNP stream (retained by membrane)
+permeate_mL_min =            | Unit: mL/min  | Typical: 5-90    | Waste stream (ethanol + buffer salts removed)
+
+  Cryoprotectant Addition  (T-100 Stabilizer Vessel)
+  Trehalose or sucrose solution is added after TFF to protect LNPs during freezing.
+
+cryo_flow_mL_min = 0.5       | Unit: mL/min  | Typical: 0.1-2   | REQUIRED. Cryoprotectant addition flow
+after_cryo_flow_mL_min =     | Unit: mL/min  | Typical: 1-17    | Flow after cryo addition = retentate + cryo
+
+  Sterile Filtration  (F-101, 0.22 um Filter)
+  Final product is filtered through a 0.22 um membrane before filling.
+  A small volume is held up inside the filter housing and is not recovered.
+
+sterile_filter_dead_vol_mL_min = 0.5  | Unit: mL/min  | Typical: 0.1-1  | REQUIRED. Filter hold-up volume
+final_product_mL_min =       | Unit: mL/min  | Typical: 1-16    | Final product collected in ST-101
+
+
+  SECTION B  —  FEED STREAM COMPOSITION  (optional)
+  Fill in concentrations or mass flows for the four input streams.
+  Derived streams (mixer output, TFF retentate, TFF permeate, final product)
+  are calculated automatically by mass conservation and TFF efficiency factors.
+
+  TFF separation efficiencies used in the model:
+    mRNA                95% retained (5% lost to permeate)
+    Lipids (IL/DSPC/Chol/PEG)   98% retained (2% to permeate)
+    Ethanol              5% retained (95% removed by TFF)
+    Buffer salts         2% retained (98% removed by TFF)
+    Water               10% retained (90% removed by TFF)
+  These can be adjusted in the TFF_RETENTION_FRACTION table in lnp_composition.py.
+
+  Aqueous Phase  (mRNA + Citrate Buffer, Pump P-101)
+  Prepared in T-101. Contains mRNA, citrate buffer components, EDTA, and water.
+  Typical total: ~90-100 mg/mL (mostly water).
+
+aqueous.mRNA.conc_mg_mL =            | mg/mL  | Typical: 0.05-0.5   | mRNA concentration
+aqueous.mRNA.mass_mg_min =           | mg/min | Leave blank if concentration is given above
+aqueous.Citric_Acid.conc_mg_mL =     | mg/mL  | Typical: 5-15       | Citric acid (buffer component)
+aqueous.Citric_Acid.mass_mg_min =    | mg/min | Leave blank if concentration is given above
+aqueous.Sodium_Citrate.conc_mg_mL =  | mg/mL  | Typical: 5-15       | Sodium citrate (buffer component)
+aqueous.Sodium_Citrate.mass_mg_min = | mg/min | Leave blank if concentration is given above
+aqueous.EDTA.conc_mg_mL =           | mg/mL  | Typical: 0.1-0.5    | EDTA (chelating agent)
+aqueous.EDTA.mass_mg_min =          | mg/min | Leave blank if concentration is given above
+aqueous.Water.conc_mg_mL =          | mg/mL  | Typical: 900-990    | Water (balance, solvent)
+aqueous.Water.mass_mg_min =         | mg/min | Leave blank if concentration is given above
+
+  Organic Phase  (Lipids in Ethanol, Pump P-102)
+  Prepared in T-102. Contains ionisable lipid, DSPC, cholesterol, PEG-lipid in ethanol.
+  Standard molar ratio: Ionisable Lipid : DSPC : Cholesterol : PEG-Lipid = 50 : 10 : 38.5 : 1.5
+  Total lipid concentration typically 10-15 mg/mL in ethanol.
+
+organic.Ionisable_Lipid.conc_mg_mL = | mg/mL  | Typical: 5-12       | Ionisable lipid (SM-102 or MC3)
+organic.Ionisable_Lipid.mass_mg_min =| mg/min | Leave blank if concentration is given above
+organic.DSPC.conc_mg_mL =           | mg/mL  | Typical: 1-5        | DSPC (structural phospholipid)
+organic.DSPC.mass_mg_min =          | mg/min | Leave blank if concentration is given above
+organic.Cholesterol.conc_mg_mL =    | mg/mL  | Typical: 1-5        | Cholesterol (membrane stabiliser)
+organic.Cholesterol.mass_mg_min =   | mg/min | Leave blank if concentration is given above
+organic.PEG_Lipid.conc_mg_mL =     | mg/mL  | Typical: 0.2-2      | PEG-DMG / PEG-Lipid (steric stabiliser)
+organic.PEG_Lipid.mass_mg_min =    | mg/min | Leave blank if concentration is given above
+organic.Ethanol.conc_mg_mL =       | mg/mL  | Typical: 700-800    | Ethanol solvent (density ~789 mg/mL)
+organic.Ethanol.mass_mg_min =      | mg/min | Leave blank if concentration is given above
+
+  Dilution Buffer  (PBS pH 7.4, from T-105)
+  Standard PBS: 8.0 g/L NaCl, 1.44 g/L Na2HPO4, 0.24 g/L NaH2PO4
+
+dilution_buffer.NaCl.conc_mg_mL =      | mg/mL  | Typical: 8-9        | Sodium chloride
+dilution_buffer.NaCl.mass_mg_min =     | mg/min | Leave blank if concentration is given above
+dilution_buffer.Na2HPO4.conc_mg_mL =   | mg/mL  | Typical: 1.2-1.5   | Dibasic sodium phosphate
+dilution_buffer.Na2HPO4.mass_mg_min =  | mg/min | Leave blank if concentration is given above
+dilution_buffer.NaH2PO4.conc_mg_mL =  | mg/mL  | Typical: 0.2-0.3   | Monobasic sodium phosphate
+dilution_buffer.NaH2PO4.mass_mg_min = | mg/min | Leave blank if concentration is given above
+dilution_buffer.Water.conc_mg_mL =    | mg/mL  | Typical: 980-992   | Water (balance, solvent)
+dilution_buffer.Water.mass_mg_min =   | mg/min | Leave blank if concentration is given above
+
+  Cryoprotectant Feed  (Trehalose or Sucrose solution, T-100)
+  Typically 10% w/v Trehalose or Sucrose (100-200 mg/mL) in Water for Injection.
+
+cryo_feed.Trehalose.conc_mg_mL =  | mg/mL  | Typical: 100-200    | Trehalose or sucrose concentration
+cryo_feed.Trehalose.mass_mg_min = | mg/min | Leave blank if concentration is given above
+cryo_feed.Water.conc_mg_mL =      | mg/mL  | Typical: 800-900    | Water (balance)
+cryo_feed.Water.mass_mg_min =     | mg/min | Leave blank if concentration is given above
+
+
+  SECTION C  —  FINAL PRODUCT COMPOSITION  (optional)
+  Use Section C to:
+    (1) Back-calculate feed concentrations from your final product target
+        (leave Section B blank, fill Section C)
+    (2) Verify that your feed data produces the expected final product
+        (fill both Section B and Section C — code checks if they are consistent)
+
+  Components present in final product:
+    mRNA, Ionisable Lipid, DSPC, Cholesterol, PEG-Lipid  (from TFF retentate)
+    Trehalose, Water  (from cryoprotectant feed)
+    Residual Ethanol  (5% not removed by TFF)
+    Residual buffer salts  (2% not removed by TFF)
+
+final_product.mRNA.conc_mg_mL =            | mg/mL  | Typical: 0.05-1.0   | mRNA in final product
+final_product.mRNA.mass_mg_min =           | mg/min | Leave blank if concentration is given above
+final_product.Ionisable_Lipid.conc_mg_mL = | mg/mL  | Typical: 3-20       | Ionisable lipid in final product
+final_product.Ionisable_Lipid.mass_mg_min =| mg/min | Leave blank if concentration is given above
+final_product.DSPC.conc_mg_mL =           | mg/mL  | Typical: 1-6        | DSPC in final product
+final_product.DSPC.mass_mg_min =          | mg/min | Leave blank if concentration is given above
+final_product.Cholesterol.conc_mg_mL =    | mg/mL  | Typical: 1-6        | Cholesterol in final product
+final_product.Cholesterol.mass_mg_min =   | mg/min | Leave blank if concentration is given above
+final_product.PEG_Lipid.conc_mg_mL =     | mg/mL  | Typical: 0.1-1.5    | PEG-Lipid in final product
+final_product.PEG_Lipid.mass_mg_min =    | mg/min | Leave blank if concentration is given above
+final_product.Trehalose.conc_mg_mL =     | mg/mL  | Typical: 10-20      | Trehalose in final product
+final_product.Trehalose.mass_mg_min =    | mg/min | Leave blank if concentration is given above
+final_product.Water.conc_mg_mL =         | mg/mL  | Typical: 500-900    | Water in final product
+final_product.Water.mass_mg_min =        | mg/min | Leave blank if concentration is given above
+final_product.Ethanol.conc_mg_mL =       | mg/mL  | Typical: 5-20       | Residual ethanol (should be low)
+final_product.Ethanol.mass_mg_min =      | mg/min | Leave blank if concentration is given above
+
+
+  END OF INPUT FILE
+  Save this file, then run:  python lnp_simulation.py
